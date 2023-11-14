@@ -1,0 +1,2 @@
+changes the schema of student_course, i.e made student_id as non foreign key
+creating a new table materials, to upload materials for courses

@@ -1,0 +1,71 @@
+body{
+    background-color: #a3fafd;
+  }
+
+
+h1{
+color: #d41e1e;
+font-style: inherit;
+text-align: center;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+  }
+  
+  li {
+    float: left;
+  }
+  
+  li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  
+  /* Change the link color to #111 (black) on hover */
+  li a:hover {
+    background-color: #111;
+  }
+
+  .attendence_when {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    padding: 14px 10px 4px 4px;
+  }
+
+  table {
+    border-radius: 5px;
+    padding-top: 20px;
+    padding-left: 5px;
+  }
+  td {
+    padding-bottom: 20px;
+    padding-right: 20px;
+  }
+
+
+.attendence {
+    padding-left: 10px;
+}
+.button {
+    background-color: #8acd66;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+  }
+

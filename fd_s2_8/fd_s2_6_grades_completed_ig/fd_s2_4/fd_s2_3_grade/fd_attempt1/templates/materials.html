@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Materials</title>
+</head>
+<body>
+    <h1>Materials</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materials %}
+            <tr>
+                <td>{{ material[2] }}</td>
+                <td>{{ material[3] }}</td>
+                <td><a href="{{ url_for('download', filename=material[2]) }}">Download</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Add New Material</h2>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('materials', course_id=course_id) }}">
+        <label>Title:</label>
+        <input type="text" name="title" required><br>
+
+        <label>File:</label>
+        <input type="file" name="file" required><br>
+
+        <input type="submit" value="Upload">
+    </form>
+</body>
+</html>

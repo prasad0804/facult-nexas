@@ -1,0 +1,99 @@
+<!-- set_attendance_grade_weight.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Management - {{ course_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1f2029;
+            background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+            background-size: cover;
+            background-position: center;
+            filter: blur(400px); /* Adjust the blur radius as desired */
+            z-index: -1;
+        }
+
+        .container {
+            margin: 50px auto;
+            width: 400px;
+            padding: 30px;
+            background-color: #2a2b38;
+            background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1462889/pat.svg');
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #e2ecec;
+            font-family: 'Poppins';
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            color: #e2ecec;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        input[type="number"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Set Attendance Grade Weight</h1>
+        <form action="{{ url_for('set_attendance_grade_weight', course_id=course_id) }}" method="POST">
+            <label for="attendance_grade_weight">Attendance Grade Weight:</label>
+            <input type="number" name="attendance_grade_weight" id="attendance_grade_weight" min="0" max="100" required>
+            <button type="submit">Update Weight</button>
+        </form>
+    </div>
+</body>
+</html>

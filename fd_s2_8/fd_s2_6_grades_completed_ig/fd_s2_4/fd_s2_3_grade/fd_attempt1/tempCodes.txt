@@ -1,0 +1,606 @@
+
+
+1) 
+""""""""""""""""""""""""
+
+working code for search as well as date and hour (should input all 3)
+@app.route('/view_attendance/<course_id>', methods=['GET', 'POST'])
+def view_attendance(course_id):
+    # Check if the user is logged in
+    if 'faculty_id' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        # Get the roll_number from the form data
+        roll_number = request.form['search']
+        date = request.form['date']
+        hour = request.form['hour']
+
+        if not date or not hour:
+            # Retrieve attendance records for the specific student in the given course
+            cur = mysql.connection.cursor()
+            cur.execute("SELECT * FROM attendance WHERE student_id = %s AND course_id = %s", (roll_number, course_id))
+            attendance = cur.fetchall()
+            cur.close()
+        else:
+            # Retrieve attendance records for the specific student, date, and hour in the given course
+            cur = mysql.connection.cursor()
+            cur.execute("SELECT * FROM attendance WHERE student_id = %s AND course_id = %s AND date_ = %s AND hour_ = %s",
+                        (roll_number, course_id, date, hour))
+            attendance = cur.fetchall()
+            cur.close()
+
+        # Render the template with the attendance records
+        return render_template('view_attendance.html', attendance=attendance, course_id=course_id)
+
+    # Render the template for initial page load
+    return render_template('view_attendance.html', course_id=course_id, attendance=None)
+
+
+
+
+corresponding view_attendance.html
+
+--------------------------------------------------------------------------
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Attendance</title>
+    <style>
+        /* CSS styling for the table */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>View Attendance</h1>
+    <form method="POST" action="{{ url_for('view_attendance', course_id=course_id) }}">
+        <div>
+            <label for="search">Search by Roll Number:</label>
+            <input type="text" id="search" name="search" required>
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date">
+            <label for="hour">Hour:</label>
+            <input type="text" id="hour" name="hour">
+            <button type="submit">Search</button>
+        </div>
+    </form>
+
+    {% if attendance %}
+        <h2>Attendance Records</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Course ID</th>
+                    <th>Faculty ID</th>
+                    <th>Date</th>
+                    <th>Hour</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance %}
+                    <tr>
+                        <td>{{ record[0] }}</td>
+                        <td>{{ record[1] }}</td>
+                        <td>{{ record[2] }}</td>
+                        <td>{{ record[3] }}</td>
+                        <td>{{ record[4] }}</td>
+                        <td>{{ record[5] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No attendance records found.</p>
+    {% endif %}
+</body>
+</html>
+
+--------------------------------------------------------------------------
+
+
+2)
+
+""""""""""""""""""""""""""""
+// SEARCHING EITEHR OF THEM WORKS - EITHER ROLL NUMBER OR DATEWISE
+
+
+@app.route('/view_attendance/<course_id>', methods=['GET', 'POST'])
+def view_attendance(course_id):
+    # Check if the user is logged in
+    if 'faculty_id' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        # Get the form data
+        roll_number = request.form.get('search')
+        date = request.form.get('date')
+        hour = request.form.get('hour')
+
+        # Retrieve attendance records based on the input values
+        cur = mysql.connection.cursor()
+        if roll_number and date and hour:
+            # Case 1: Specific student, date, and hour
+            cur.execute("SELECT * FROM attendance WHERE student_id = %s AND course_id = %s AND date_ = %s AND hour_ = %s",
+                        (roll_number, course_id, date, hour))
+        elif roll_number:
+            # Case 2: Specific student
+            cur.execute("SELECT * FROM attendance WHERE student_id = %s AND course_id = %s",
+                        (roll_number, course_id))
+        elif date and hour:
+            # Case 3: All students based on date and hour
+            cur.execute("SELECT * FROM attendance WHERE course_id = %s AND date_ = %s AND hour_ = %s",
+                        (course_id, date, hour))
+        else:
+            # No input values provided, redirect back to the page
+            return redirect(url_for('view_attendance', course_id=course_id))
+
+        attendance = cur.fetchall()
+        cur.close()
+
+        # Render the template with the attendance records
+        return render_template('view_attendance.html', attendance=attendance, course_id=course_id)
+
+    # Render the template for initial page load
+    return render_template('view_attendance.html', course_id=course_id)
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+corresponding HTML file 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Attendance</title>
+    <style>
+        /* CSS styling for the table */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>View Attendance</h1>
+    <form method="POST" action="{{ url_for('view_attendance', course_id=course_id) }}">
+        <div>
+            <label for="search">Search by Roll Number:</label>
+            <input type="text" id="search" name="search">
+        </div>
+        <div>
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date">
+        </div>
+        <div>
+            <label for="hour">Hour:</label>
+            <input type="text" id="hour" name="hour">
+        </div>
+        <button type="submit">Search</button>
+    </form>
+    
+    
+
+    {% if attendance %}
+        <h2>Attendance Records</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Course ID</th>
+                    <th>Faculty ID</th>
+                    <th>Date</th>
+                    <th>Hour</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance %}
+                    <tr>
+                        <td>{{ record[0] }}</td>
+                        <td>{{ record[1] }}</td>
+                        <td>{{ record[2] }}</td>
+                        <td>{{ record[3] }}</td>
+                        <td>{{ record[4] }}</td>
+                        <td>{{ record[5] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No attendance records found.</p>
+    {% endif %}
+</body>
+</html>
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+
+
+
+
+
+
+
+
+VIEW DISTRIBUTION - IMAGE IS SAVED IN THE STATIC FOLDER
+
+
+
+@app.route('/view_distribution/<course_id>')
+def view_distribution(course_id):
+    # Retrieve the grades for the given course_id from the database
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT final_grade FROM final_grades WHERE course_id = %s", (course_id,))
+    grades = cur.fetchall()
+    cur.close()
+    # Perform data processing and generate visualizations using the grades
+    # You can use any data visualization library such as Matplotlib, Plotly, or D3.js
+    # Here's an example using Matplotlib to create a histogram of the grade distribution
+    import matplotlib.pyplot as plt
+
+    grade_values = [grade[0] for grade in grades]
+    plt.hist(grade_values, bins=10)
+    plt.xlabel('Grade')
+    plt.ylabel('Count')
+    plt.title('Grade Distribution')
+    plt.savefig('static/view_distribution.png')  # Save the visualization as an image
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+view_distribution.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Grade Distribution</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Grade Distribution - Course {{ course_id }}</h2>
+        <hr>
+        <div class="chart-container">
+            <img src="{{ url_for('static', filename='view_distribution.png') }}" alt="Grade Distribution">
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+
+
+
+=====================================================
+button to click view_histogram and view_pie_chart working but overlapping
+
+
+
+
+@app.route('/view_distribution/<course_id>')
+def view_distribution(course_id):
+    # Retrieve the grades for the given course_id from the database
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT final_grade FROM final_grades WHERE course_id = %s", (course_id,))
+    grades = cur.fetchall()
+    cur.close()
+    
+    # Perform data processing and generate visualizations using the grades
+    grade_values = [grade[0] for grade in grades]
+    
+    # Create a histogram of the grade distribution
+    plt.figure()
+    plt.hist(grade_values, bins=10)
+    plt.xlabel('Grade')
+    plt.ylabel('Count')
+    plt.title('Grade Distribution')
+    histogram_img = io.BytesIO()
+    plt.savefig(histogram_img, format='png')
+    histogram_img.seek(0)
+    histogram_url = base64.b64encode(histogram_img.getvalue()).decode()
+
+    # Create a pie chart of the grade distribution
+    plt.figure()
+    unique_grades = list(set(grade_values))
+    grade_counts = [grade_values.count(grade) for grade in unique_grades]
+    plt.pie(grade_counts, labels=unique_grades, autopct='%1.1f%%')
+    plt.title('Grade Distribution')
+    pie_chart_img = io.BytesIO()
+    plt.savefig(pie_chart_img, format='png')
+    pie_chart_img.seek(0)
+    pie_chart_url = base64.b64encode(pie_chart_img.getvalue()).decode()
+
+    return render_template('view_distribution.html', course_id=course_id, histogram_url=histogram_url, pie_chart_url=pie_chart_url)
+
+
+@app.route('/view_histogram/<course_id>')
+def view_histogram(course_id):
+    # Retrieve the grades for the given course_id from the database
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT final_grade FROM final_grades WHERE course_id = %s", (course_id,))
+    grades = cur.fetchall()
+    cur.close()
+
+    # Perform data processing and generate a histogram of the grade distribution
+    grade_values = [grade[0] for grade in grades]
+    plt.hist(grade_values, bins=10)
+    plt.xlabel('Grade')
+    plt.ylabel('Count')
+    plt.title('Grade Distribution')
+    histogram_img = io.BytesIO()
+    plt.savefig(histogram_img, format='png')
+    histogram_img.seek(0)
+    histogram_url = base64.b64encode(histogram_img.getvalue()).decode()
+
+    return render_template('view_distribution.html', course_id=course_id, chart_type='histogram', histogram_url=histogram_url)
+
+
+
+
+============================================================
+corresponding view_distribution.html for the above file 
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Grade Distribution</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Grade Distribution - Course {{ course_id }}</h2>
+        <hr>
+        <div class="chart-options">
+            <a href="{{ url_for('view_distribution', course_id=course_id) }}?chart_type=pie_chart">View Pie Chart</a>
+            <a href="{{ url_for('view_histogram', course_id=course_id) }}">View Histogram</a>
+        </div>
+        {% if chart_type == 'histogram' %}
+            <img src="data:image/png;base64,{{ histogram_url }}" alt="Histogram">
+        {% else %}
+            <img src="data:image/png;base64,{{ pie_chart_url }}" alt="Pie Chart">
+        {% endif %}
+    </div>
+</body>
+</html>
+
+-----------------------------------------------------------------
+
+histogram display is working fine but image overextending
+
+
+@app.route('/view_distribution/<course_id>')
+def view_distribution(course_id):
+    # Retrieve the grades for the given course_id from the database
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT final_grade FROM final_grades WHERE course_id = %s", (course_id,))
+    grades = cur.fetchall()
+    cur.close()
+    
+    # Perform data processing and generate histogram
+    grade_values = [grade[0] for grade in grades]
+    plt.hist(grade_values, bins=10) 
+    plt.xlabel('Grade')
+    plt.ylabel('Count')
+    plt.title('Grade Distribution')
+
+    # Save the histogram plot as an image in memory
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    plot_data = buffer.getvalue()
+    buffer.close()
+
+    # Encode the plot data as base64 and convert it to a string
+    encoded_plot_data = base64.b64encode(plot_data).decode('utf-8')
+
+    return render_template('view_distribution.html', course_id=course_id, encoded_plot_data=encoded_plot_data)
+
+====================================================================
+corresponding html for the above code 
+view_distribution.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Grade Distribution</title>
+    <style>
+        .popup {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 400px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            padding: 20px;
+        }
+    </style>
+    <script>
+        function openPopup(popupId) {
+            var popup = document.getElementById(popupId);
+            popup.style.display = 'block';
+        }
+
+        function closePopup(popupId) {
+            var popup = document.getElementById(popupId);
+            popup.style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Grade Distribution - Course {{ course_id }}</h2>
+        <hr>
+        <div class="chart-options">
+            <a href="#" onclick="openPopup('popupHistogram')">View Histogram</a>
+            <!-- Add more chart options as needed -->
+        </div>
+    </div>
+
+    <div class="popup" id="popupHistogram">
+        <h3>Histogram</h3>
+        <img src="data:image/png;base64,{{ encoded_plot_data }}" alt="Histogram">
+        <button onclick="closePopup('popupHistogram')">Close</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+
+============================================================================
+both histogram and pie chart display is working 
+
+<!-- 
+working code -->
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>View Grade Distribution</title>
+    <style>
+        .popup {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 400px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            padding: 20px;
+        }
+    </style>
+    <script>
+        function openPopup(popupId) {
+            var popup = document.getElementById(popupId);
+            popup.style.display = 'block';
+        }
+
+        function closePopup(popupId) {
+            var popup = document.getElementById(popupId);
+            popup.style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Grade Distribution - Course {{ course_id }}</h2>
+        <hr>
+        <div class="chart-options">
+            <a href="#" onclick="openPopup('popupHistogram')">View Histogram</a>
+            <a href="#" onclick="openPopup('popupPieChart')">View Pie Chart</a>
+        </div>
+    </div>
+
+    <div class="popup" id="popupHistogram">
+        <h3>Histogram</h3>
+        <img src="data:image/png;base64,{{ histogram_base64 }}" alt="Histogram">
+        <button onclick="closePopup('popupHistogram')">Close</button>
+    </div>
+
+    <div class="popup" id="popupPieChart">
+        <h3>Pie Chart</h3>
+        <img src="data:image/png;base64,{{ pie_chart_base64 }}" alt="Pie Chart">
+        <button onclick="closePopup('popupPieChart')">Close</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html> -->
+
+=========================================================
+CORRESPONDING BACKEND CODE FOR THE ABOVE:
+
+
+@app.route('/view_distribution/<course_id>')
+def view_distribution(course_id):
+    # Retrieve the grades for the given course_id from the database
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT final_grade FROM final_grades WHERE course_id = %s", (course_id,))
+    grades = cur.fetchall()
+    cur.close()
+
+    # Perform data processing and generate histogram
+    grade_values = [grade[0] for grade in grades]
+    plt.hist(grade_values, bins=10)
+    plt.xlabel('Grade')
+    plt.ylabel('Count')
+    plt.title('Grade Distribution')
+
+    # Save the histogram plot as an image in memory
+    histogram_buffer = io.BytesIO()
+    plt.savefig(histogram_buffer, format='png')
+    histogram_buffer.seek(0)
+    histogram_data = histogram_buffer.getvalue()
+    histogram_buffer.close()
+
+    # Perform data processing and generate pie chart
+    plt.figure()
+    unique_grades = list(set(grade_values))
+    grade_counts = [grade_values.count(grade) for grade in unique_grades]
+    plt.pie(grade_counts, labels=unique_grades, autopct='%1.1f%%')
+    plt.title('Grade Distribution')
+
+    # Save the pie chart plot as an image
+    pie_chart_file = 'static/pie_chart.png'
+    plt.savefig(pie_chart_file)
+
+    # Encode the pie chart image as base64
+    with open(pie_chart_file, 'rb') as f:
+        pie_chart_data = f.read()
+    pie_chart_base64 = base64.b64encode(pie_chart_data).decode('utf-8')
+
+    # Clear the current figure to release memory
+    plt.clf()
+    # Encode the histogram plot data as base64 and convert it to a string
+    histogram_base64 = base64.b64encode(histogram_data).decode('utf-8')
+    pie_chart_base64 = base64.b64encode(pie_chart_data).decode('utf-8')
+    return render_template('view_distribution.html', course_id=course_id, histogram_base64=histogram_base64, pie_chart_base64=pie_chart_base64)
+
+
+
+
+

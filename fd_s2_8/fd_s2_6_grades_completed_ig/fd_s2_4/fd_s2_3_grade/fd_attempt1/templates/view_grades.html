@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Grades - Course {{ course_name }}</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700,800,900');
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1f2029;
+      background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+      background-size: cover;
+      background-position: center;
+      filter: blur(100px); /* Adjust the blur radius as desired */
+      z-index: -1;
+    }
+
+    .container {
+      margin: 50px auto;
+      padding: 30px;
+      color: white;
+      background-color: #2a2b38;
+      background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1462889/pat.svg');
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      align-items: center;
+    }
+
+    h2 {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    hr {
+      border-top: 2px solid #ccc;
+      margin-bottom: 30px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      font-weight: bold;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container my-4">
+    <h2>View Grades - Course {{ course_name }}</h2>
+    <div class="form-group">
+      <label for="test-select">Select Test:</label>
+      <select class="form-control" id="test-select">
+        <option value="">All Tests</option>
+        {% for test_name in test_names %}
+          <option value="{{ test_name }}">{{ test_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Test Name</th>
+          <th>Score</th>
+          <th>Total Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student_grade in student_grades %}
+          <tr>
+            <td>{{ student_grade[0] }}</td>
+            <td>{{ student_grade[1] }}</td>
+            <td>{{ student_grade[2] }}</td>
+            <td>{{ student_grade[3] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <form  action="{{ url_for('view_grades', course_id=course_id)}}" method="POST" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="csv-file">Upload CSV:</label>
+        <input type="file" class="form-control-file" id="csv-file" name="file" accept=".xlsx, .xls">
+      </div>
+      <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <script>
+    // JavaScript code for handling the test selection
+    document.getElementById('test-select').addEventListener('change', function() {
+      var selectedTest = this.value;
+      var rows = document.querySelectorAll('tbody tr');
+
+      // Hide/show rows based on the selected test
+      for (var i = 0; i < rows.length; i++) {
+        var testCell = rows[i].querySelectorAll('td')[1];
+        if (selectedTest === '' || selectedTest === testCell.textContent) {
+          rows[i].style.display = '';
+        } else {
+          rows[i].style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+<!-- <body>
+  <div class="container my-4">
+    <h2>View Grades - Course {{ course_name }}</h2>
+    <div class="form-group">
+      <label for="test-select">Select Test:</label>
+      <select class="form-control" id="test-select">
+        <option value="">All Tests</option>
+        {% for test_name in test_names %}
+          <option value="{{ test_name }}">{{ test_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Test Name</th>
+          <th>Score</th>
+          <th>Total Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student_grade in student_grades %}
+          <tr>
+            <td>{{ student_grade[0] }}</td>
+            <td>{{ student_grade[1] }}</td>
+            <td>{{ student_grade[2] }}</td>
+            <td>{{ student_grade[3] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="text-right">
+      <button class="btn btn-primary" id="export-btn">Export to CSV</button>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery-csv/dist/jquery.csv.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+<script>
+  // JavaScript code for handling the test selection
+  document.getElementById('test-select').addEventListener('change', function() {
+    var selectedTest = this.value;
+    var rows = document.querySelectorAll('tbody tr');
+
+    // Hide/show rows based on the selected test
+    for (var i = 0; i < rows.length; i++) {
+      var testCell = rows[i].querySelectorAll('td')[1];
+      if (selectedTest === '' || selectedTest === testCell.textContent) {
+        rows[i].style.display = '';
+      } else {
+        rows[i].style.display = 'none';
+      }
+    }
+  });
+
+  // JavaScript code for exporting to CSV
+  document.getElementById('export-csv-btn').addEventListener('click', function() {
+    var rows = document.querySelectorAll('tbody tr');
+    var csvData = [];
+
+    // Collect the data from the table
+    for (var i = 0; i < rows.length; i++) {
+      var rowData = [];
+      var cells = rows[i].querySelectorAll('td');
+      for (var j = 0; j < cells.length; j++) {
+        rowData.push(cells[j].textContent);
+      }
+      csvData.push(rowData);
+    }
+
+    // Convert data to CSV format
+    var csv = csvData.map(function(row) {
+      return row.join(',');
+    }).join('\n');
+
+    // Create a Blob and download the file
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    var url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'student_grades.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  // JavaScript code for exporting to PDF
+  document.getElementById('export-pdf-btn').addEventListener('click', function() {
+    var doc = new jsPDF();
+    doc.autoTable({ html: 'table' });
+    doc.save('student_grades.pdf');
+  });
+</script>
+
+  
+</body>
+</html> -->

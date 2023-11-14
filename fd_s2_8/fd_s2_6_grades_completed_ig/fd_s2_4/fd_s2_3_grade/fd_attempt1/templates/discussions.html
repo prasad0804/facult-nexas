@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Discussion Forum</title>
+</head>
+<body>
+    <h1>Discussion Forum for {{ course_id }}</h1>
+
+    <h2>Existing Messages:</h2>
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message[0] }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No messages yet.</p>
+    {% endif %}
+
+    <h2>Add a New Message:</h2>
+    <form method="POST" action="/discussions/{{ course_id }}">
+        <textarea name="message" rows="4" cols="50" placeholder="Enter your message"></textarea><br>
+        <input type="submit" value="Add Message">
+    </form>
+</body>
+</html>

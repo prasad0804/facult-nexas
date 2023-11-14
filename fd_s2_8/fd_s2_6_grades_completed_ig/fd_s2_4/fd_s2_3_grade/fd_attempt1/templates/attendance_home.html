@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Management - {{ course_name }}</title>
+    <style>
+       /*
+       <body>
+    <h1>Attendance Management - {{ course_name }}</h1>
+    <ul>
+        <li><a href="{{ url_for('view_attendance', course_id=course_id) }}">View Attendance</a></li>
+        <li><a href="{{ url_for('take_attendance', course_id=course_id) }}">Take Attendance</a></li>
+    </ul>
+</body>
+give css for the above code. start outside the commments
+
+     */
+   
+     body {
+  font-family: Arial, sans-serif;
+  background-color: #1f2029;
+  background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+  background-size: cover;
+  background-position: center;
+  filter: blur(400px); /* Adjust the blur radius as desired */
+  z-index: -1;
+}
+
+    .container {
+        margin: 50px auto;
+        width: 400px;
+        padding: 30px;
+        background-color: #2a2b38;
+        background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1462889/pat.svg');
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #e2ecec;
+        font-family: 'Poppins';
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        padding-top: 20px;
+        gap: 40px;
+        justify-content: center;
+        padding-bottom: 40px;
+    }
+
+    .flex-container_2 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 40px;
+        justify-content: center;
+    }
+
+    .quicklink {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 50px;
+        width: 210px;
+        font-size: 15px;
+        font-weight: 400;
+        color: dimgrey;
+        background-color: white;
+        border: 1px solid dimgray;
+        border-radius: 50px;
+        transition: background-color 0.3s, border 0.3s, box-shadow 0.3s;
+    }
+    .quicklink a {
+        text-decoration: none;
+        color: dimgray;
+        font-family: 'Poppins';
+        font-weight: 600;
+        transition: color 0.3s;
+
+    }
+
+    .quicklink_2 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 80px;
+        width: 80px;
+        color: dimgrey;
+        background-color: white;
+        border: 1px solid dimgray;
+        border-radius: 50%;
+        transition: background-color 0.3s, border 0.3s, box-shadow 0.3s;
+    }
+
+    .quicklink:hover {
+        background-color: #ffeba7;
+        color: rgb(29, 27, 27);
+        border: 1px solid #ffeba7;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .quicklink_2:hover {
+        background-color: #ffeba7;
+        color: white;
+        border: 1px solid #ffeba7;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .quicklink_2 i {
+        font-size: 30px;
+    }
+
+    .quicklink i {
+        font-size: 20px;
+        margin-right: 10px;
+    }
+
+    .quicklink span {
+        font-size: 15px;
+        font-weight: 400;
+    }
+
+    .quicklink_2 span {
+        font-size: 15px;
+        font-weight: 400;
+    }
+
+    .quicklink_2 span {
+        display: none;
+    }
+
+    .quicklink_2:hover span {
+        display: block;
+    }
+
+    .quicklink span {
+        display: none;
+    }
+
+    .quicklink:hover span {
+        display: block;
+    }
+
+    .quicklink_2:hover i {
+        display: none;
+    }
+
+    /* stop */
+
+    
+    </style>
+</head>
+<body>
+<!-- make changes to the code below to incorporate the css in it -->
+<!-- add css to the code below-->
+    <!-- <h1>Attendance Management - {{ course_name }}</h1>
+    <ul>
+        <li><a href="{{ url_for('view_attendance', course_id=course_id) }}">View Attendance</a></li>
+        <li><a href="{{ url_for('take_attendance', course_id=course_id) }}">Take Attendance</a></li>
+    </ul> -->
+    <div class="container">
+        <h1>Attendance Management - {{ course_name }}</h1>
+        <div class="flex-container">
+            <div class="quicklink">
+                <i class="fas fa-user-graduate"></i>
+                <a href="{{ url_for('view_attendance', course_id=course_id) }}">View Attendance</a>
+            </div>
+            <div class="quicklink">
+                <i class="fas fa-user-graduate"></i>
+                <a href="{{ url_for('take_attendance', course_id=course_id) }}">Take Attendance</a>
+            </div>
+            <div class="quicklink">
+                <i class="fas fa-cogs"></i>
+                <a href="{{ url_for('set_attendance_grade_weight', course_id=course_id) }}">Set Attendance Weight</a>
+            </div>
+        </div>
+    </div>
+    
+    
+<!-- stop -->
+
+
+
+
+</body>
+</html>

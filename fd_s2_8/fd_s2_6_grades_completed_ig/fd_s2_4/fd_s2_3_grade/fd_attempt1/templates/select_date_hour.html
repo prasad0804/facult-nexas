@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Date and Hour</title>
+</head>
+<body>
+    <h1>Select Date and Hour</h1>
+    <form method="POST" action="{{ url_for('view_attendance', course_id=course_id) }}">
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required>
+        <br>
+        <label for="hour">Hour:</label>
+        <input type="number" id="hour" name="hour" min="1" max="12" required>
+        <br>
+        <input type="submit" value="View Attendance">
+    </form>
+</body>
+</html>

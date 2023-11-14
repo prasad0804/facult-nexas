@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Management</title>
+</head>
+<body>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700,800,900');
+        body {
+  font-family: Arial, sans-serif;
+  background-color: #1f2029;
+  background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+  background-size: cover;
+  background-position: center;
+  filter: blur(100px); /* Adjust the blur radius as desired */
+  z-index: -1;
+}
+        h1 {
+            text-align: center;
+            color: #fafafa;
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 40px;
+        }
+        form {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            color: white;
+            background-color: #2a2b38;
+            background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1462889/pat.svg');
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #eee7e7;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            border-radius: 4px;
+            font-size: 20px;
+            line-height: 22px;
+            letter-spacing: 0.5px;
+        }
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+        table {
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            border-radius: 4px;
+            font-size: 20px;
+            line-height: 22px;
+            letter-spacing: 0.5px;
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+        }
+        th {
+            color: white;
+            font-weight: 600;
+        }
+        
+        input[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #ffeba7;
+            color: #020202;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #f1e0a58f;;
+        }
+    </style>
+    <h1>TAKE ATTENDENCE</h1>  
+    <form method="POST" action="{{ url_for('take_attendance', course_id=course_id) }}">
+        <label for="hour">Hour:</label>
+        <input type="number" id="hour" name="hour" min="1" max="12" required>
+        <br>
+        <label for="date">Date:</label>
+        <input type="date" name="date" id="date">
+        <br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th style="text-align: center;">Attendance Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                    <tr>
+                        <td>{{ student[0] }}</td>
+                        <td>{{ student[1] }}</td>
+                        <!-- <td>{{ student[2] }}</td> -->
+                        <td>
+                            <select name="status_{{ student[0] }}">
+                                <option value="Present">Present</option>
+                                <option value="Absent">Absent</option>
+                            </select>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <input type="submit" value="Submit Attendance">
+    </form>
+</body>
+</html>

@@ -1,0 +1,356 @@
+Both request.form.get('faculty_id') and request.form['faculty_id'] retrieve the value of an HTML form input element with the name attribute set to 'faculty_id'.
+
+In HTML, the name attribute is used to identify form data after it's submitted to the server, while the id attribute is used to uniquely identify an element within a web page.
+
+result = cur.fetchone(), # has a tuple with the fetched result
+cur.fetchall() returns a list of tuples where each tuple represents a row from the result set of the executed query.
+
+#insertiong into table : faculty_details:
+cur = mysql.connection.cursor()
+cur.execute("INSERT INTO faculty_details (faculty_id, faculty_name, faculty_email, password) VALUES (%s, %s, %s, %s)", (faculty_id, faculty_name, faculty_email, password))
+mysql.connection.commit()
+cur.close()
+
+
+@app.route('/take_attendance/<course_id>', methods=['GET', 'POST'])
+def take_attendance(course_id):
+    # Check if the user is logged in
+    if 'faculty_id' not in session:
+        return redirect(url_for('login'))
+
+    # If the request is a POST, process the form data
+    if request.method == 'POST':
+        hour = request.form['hour']
+        date = request.form['date']
+
+        # Get the attendance status for each student
+        attendance_data = {}
+        for key, value in request.form.items():
+            if key.startswith('status_'):
+                student_id = key.replace('status_', '')
+                attendance_data[student_id] = value
+
+        # Update the attendance records in the database
+        cur = mysql.connection.cursor()
+        for student_id, status in attendance_data.items():
+            cur.execute("INSERT INTO attendance (faculty_id, course_id, student_id, date_, hour_, status_) VALUES (%s, %s, %s, %s, %s, %s)",
+                        (session['faculty_id'], course_id, student_id, date, hour, status))
+        mysql.connection.commit()
+        cur.close()
+
+        # Redirect to the attendance management page
+        return redirect(url_for('take_attendance', course_id=course_id))
+
+    else:
+        # Retrieve the course name
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT course_name FROM courses WHERE course_id = %s", (course_id,))
+        course_name = cur.fetchone()[0]
+        
+        # Retrieve the students enrolled in the course
+        cur.execute("SELECT sc.student_id FROM student_course sc JOIN students s ON sc.student_id = s.student_id WHERE sc.course_id = %s AND sc.faculty_id = %s",
+                    (course_id, session['faculty_id']))
+        students = cur.fetchall()
+        cur.close()
+
+        return render_template('take_attendance.html', course_name=course_name, course_id=course_id, students=students)
+
+
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Take Attendance</title>
+</head>
+<body>
+    <h1>Take Attendance</h1>
+    <form method="POST" action="{{ url_for('take_attendance', course_id=course_id) }}">
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required>
+        <br>
+        <label for="hour">Hour:</label>
+        <input type="number" id="hour" name="hour" min="1" max="12" required>
+        <br>
+
+        {% for student in students %}
+        <label for="status_{{ student[0] }}">{{ student[1] }}</label>
+        <select id="status_{{ student[0] }}" name="status_{{ student[0] }}">
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+        </select>
+        <br>
+        {% endfor %}
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
+
+
+
+@app.route('/take_attendance/<course_id>', methods=['GET', 'POST'])
+def take_attendance(course_id):
+    # Check if the user is logged in
+    if 'faculty_id' not in session:
+        return redirect(url_for('login'))
+
+    # If the request is a POST, process the form data
+    if request.method == 'POST':
+        date_ = request.form['date']
+        hour_ = request.form['hour']
+
+        # Get the list of students for the course
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT student_id FROM student_course WHERE course_id = %s AND faculty_id = %s",
+                    (course_id, session['faculty_id']))
+        students = cur.fetchall()
+
+        # Iterate through the students and insert their attendance into the database
+        for student in students:
+            student_id = student[0]
+            status = request.form.get(f'status_{student_id}')
+            cur.execute("INSERT INTO attendance (student_id, course_id, faculty_id, hour_, date_, status_) VALUES (%s, %s, %s, %s, %s, %s)",
+                        (student_id, course_id, session['faculty_id'], hour_, date_, status))
+            mysql.connection.commit()
+
+        cur.close()
+
+        # Redirect to the course homepage
+        return redirect(url_for('course_home', course_id=course_id))
+
+    return render_template('take_attendance.html', course_id=course_id)
+
+______________________
+@app.route('/customize_grading/<string:course_id>', methods=['GET', 'POST'])
+def customize_grading(course_id):
+    # Check if the user is logged in
+    if 'faculty_id' not in session:
+        return redirect(url_for('login'))
+
+    # Connect to the database
+    cursor = mysql.connection.cursor()
+
+    # Retrieve the course name from the database using the course_id
+    cursor.execute("SELECT course_name FROM courses WHERE course_id = %s", (course_id,))
+    course_name = cursor.fetchone()[0]
+
+    # Retrieve the test names for the given course from the grades table
+    cursor.execute("SELECT DISTINCT test_name FROM grades WHERE course_id = %s", (course_id, ))
+    test_names = [row[0] for row in cursor.fetchall()]
+
+    # Handle form submission
+    if request.method == 'POST':
+        # Retrieve the submitted data
+        test_name = request.form['test_name']
+        weight = request.form['weight']
+
+        # Update the weight for the selected test in the scale table
+        cursor.execute("INSERT INTO scale (weight, course_id, faculty_id, test_name) VALUES (%s, %s, %s, %s)",
+               (weight, course_id, session['faculty_id'], test_name,))
+        # cursor.execute("UPDATE scale SET weight = %s WHERE course_id = %s AND faculty_id = %s AND test_name = %s",
+        #                (weight, course_id, session['faculty_id'], test_name,))
+        mysql.connection.commit()
+
+        # Redirect to the view_grades page for the current course
+        return redirect(url_for('view_grades', course_id=course_id))
+
+    # Close the database connection and cursor
+    cursor.close()
+
+    # Render the customize_grading.html template, passing the test_names for the current course as arguments
+    return render_template('customize_grading.html', course_id=course_id, course_name=course_name, test_names=test_names)
+
+    ________________________________
+    <!DOCTYPE html>
+<html>
+<head>
+	<title>Customize Grading</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700,800,900');
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1f2029;
+      background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url(https://digitalforge.qa/images/codepen/bg.png);
+      background-size: cover;
+      background-position: center;
+      filter: blur(100px); /* Adjust the blur radius as desired */
+      z-index: -1;
+    }
+
+		.container {
+			margin: 50px auto;
+			width: 500px;
+			text-align: center;
+			margin: 50px auto;
+			padding: 30px;
+			color: white;
+			background-color: #2a2b38;
+			background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1462889/pat.svg');
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			align-items: center;
+		}
+
+		.bg-light {
+			padding: 15px 30px;
+			border: 1px solid green;
+			border-radius: 15px 0px 15px 0px;
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+			font-family: 'ZCOOL XiaoWei', serif;
+			margin-bottom: 25px;
+			padding: 15px;
+		}
+
+		.text-white {
+			font-size: 28px;
+		}
+
+		label {
+			font-family: 'Raleway', sans-serif;
+		}
+
+		a {
+			color: gray;
+			text-decoration: none;
+		}
+
+		a:hover {
+			color: #34495E;
+		}
+		.btn {
+			border-radius: 4px;
+			height: 44px;
+			font-size: 13px;
+			font-weight: 600;
+			text-transform: uppercase;
+			-webkit-transition: all 200ms linear;
+			transition: all 200ms linear;
+			margin-top: 20px;
+			letter-spacing: 1px;
+			display: -webkit-inline-flex;
+			display: -ms-inline-flexbox;
+			display: inline-flex;
+			-webkit-align-items: center;
+			-moz-align-items: center;
+			-ms-align-items: center;
+			align-items: center;
+			-webkit-justify-content: center;
+			-moz-justify-content: center;
+			-ms-justify-content: center;
+			justify-content: center;
+			-ms-flex-pack: center;
+			text-align: center;
+			border: none;
+			background-color: #ffeba7;
+			color: #102770;
+			box-shadow: 0 8px 24px 0 rgba(255, 235, 167, .2);
+		}
+
+		.btn:active,
+		.btn:focus {
+			background-color: #102770;
+			color: #ffeba7;
+			box-shadow: 0 8px 24px 0 rgba(16, 39, 112, .2);
+		}
+
+		.btn:hover {
+			background-color: #102770;
+			color: #ffeba7;
+			box-shadow: 0 8px 24px 0 rgba(16, 39, 112, .2);
+		}
+	</style>
+</head><body>
+	<div class="container">
+		<div class="col-lg-6 m-auto d-block">
+			<h1>Customize Grading</h1>
+			<form method="POST" action="{{ url_for('customize_grading', course_id=course_id) }}">
+				<div class="form-group">
+					<label for="test_name">Test Name:</label>
+					<select class="form-control" id="test_name" name="test_name">
+						{% for test_name in test_names %}
+						<option value="{{ test_name }}">{{ test_name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="weight">Weight:</label>
+					<input type="number" class="form-control" id="weight" name="weight" step="0.01" min="0" max="1" required>
+				</div>
+				<br>
+				<input type="submit" value="Update" class="btn btn-success">
+			</form>
+
+			<!-- Grading Scale Modal -->
+			<div class="modal fade" id="gradingScaleModal" tabindex="-1" role="dialog" aria-labelledby="gradingScaleModalLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="gradingScaleModalLabel">Weighting Scale</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th>Test Name</th>
+										<th>Weight</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for grading in grading_scale %}
+									<tr>
+										<td>{{ grading.test_name }}</td>
+										<td>{{ grading.weight }}</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- End Grading Scale Modal -->
+			
+			<!-- View Grading Scale Button -->
+			<button type="button" class="btn btn-primary" id="viewGradingScaleBtn" data-toggle="modal" data-target="#gradingScaleModal">
+				View Grading Scale
+			</button>
+			<!-- End View Grading Scale Button -->
+		</div>
+	</div>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			$('#viewGradingScaleBtn').click(function() {
+				$('#gradingScaleModal').modal('show');
+			});
+		});
+	</script>
+</body>
+</html>
